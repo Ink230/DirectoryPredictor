@@ -49,18 +49,19 @@ public partial class DirectoryPredictor : PSCmdlet, ICommandPredictor, IDisposab
         {
             return default;
         }
-       
-        string? searchText = string.IsNullOrEmpty(input) ? "" : input.Split(' ').LastOrDefault() ;
+
+        string searchText = (input?.Split(' ')?.LastOrDefault()?.ToLower()) ?? "";
+        string returnInput = (input?.Split(' ')?.FirstOrDefault()) ?? "";
         var pattern = searchText + "*.*";
         var dir = _runspace.SessionStateProxy.Path.CurrentLocation.ToString();
 
         string[] files = Directory.GetFiles(dir, pattern, SearchOption.TopDirectoryOnly)
             .Catch(typeof(UnauthorizedAccessException))
-            .Select(file => _includeFileExtensions ? Path.GetFileName(file) : Path.GetFileNameWithoutExtension(file))
+            .Select(file => _includeFileExtensions ? Path.GetFileName(file).ToLower() : Path.GetFileNameWithoutExtension(file).ToLower())
             .Take(_resultsLimit)
             .ToArray();
 
-        List<PredictiveSuggestion> listOfMatches = files.Select(file => new PredictiveSuggestion(string.Concat(input, $"{file}".Replace(searchText, "")))).ToList();
+        List<PredictiveSuggestion> listOfMatches = files.Select(file => new PredictiveSuggestion($"{returnInput} {file}")).ToList();
 
         return new SuggestionPackage(listOfMatches);
     }
