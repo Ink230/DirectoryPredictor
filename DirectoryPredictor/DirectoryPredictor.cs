@@ -11,7 +11,7 @@ public partial class DirectoryPredictor : PSCmdlet, ICommandPredictor, IDisposab
 {
     private readonly Guid _guid;
     private Runspace _runspace { get; }
-    public bool _includeFileExtensions;
+    public bool _includeFileExtensions = true;
     public int _resultsLimit = 10;
     
     internal DirectoryPredictor(string guid)

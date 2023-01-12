@@ -13,7 +13,7 @@ public class Cmdlets
             get => _fileExtensions.GetValueOrDefault();
             set => _fileExtensions = value;
         }
-        internal FileExtensions? _fileExtensions;
+        internal FileExtensions? _fileExtensions = FileExtensions.Include;
 
         protected override void BeginProcessing()
         {
