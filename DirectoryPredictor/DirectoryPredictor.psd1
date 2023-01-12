@@ -3,7 +3,7 @@
 RootModule = 'DirectoryPredictor.dll'
 
 # Version number of this module.
-ModuleVersion = '0.0.1'
+ModuleVersion = '0.0.4'
 
 # ID used to uniquely identify this module
 GUID = 'e242df59-e307-4476-9811-6a0c5cba8d63'
