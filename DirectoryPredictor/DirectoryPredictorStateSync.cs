@@ -40,9 +40,26 @@ public partial class DirectoryPredictor
             _includeFileExtensions = (FileExtensions)tempFileExtensions == FileExtensions.Include;
             _runspace.SessionStateProxy.PSVariable.Set("FileExtensions", (FileExtensions)tempFileExtensions);
         }
-        else
+
+        //Bug 1 - Part 1 - Explanation
+        /*
+         * A second Set-DirectoryPredictorOption flag is causing the first flag (-FileExtensions) to be ignored.
+         * With Set-DirectoryPredictorOption -ResultsLimit 4 set, alongside -FileExtensions Exclude
+         * the file extensions still show up (they shouldn't) but the results are limited to 4.
+         * 
+         * With the -ResultsLimit commented out, -FileExtensions behaviour works as intended.
+         * 
+         * Unclear where the issue arrives from.
+         * 
+         * • Race condition / thread unsafe conditions / need a lock?
+         * • Improper state sharing of Cmdlet option parameters to the DirectoryPredictor _runspace?
+         */ 
+        var tempResultsLimit = source.SessionStateProxy.GetVariable("ResultsLimit");
+
+        if (tempResultsLimit != null)
         {
-            _includeFileExtensions = false;
+            _resultsLimit = (int)tempResultsLimit;
+            _runspace.SessionStateProxy.PSVariable.Set("ResultsLimit", (int)tempResultsLimit);
         }
     }
 
