@@ -2,6 +2,12 @@
 
 namespace DirectoryPredictor;
 
+public struct DirectoryPredictorOptions
+{
+    public bool OptionsUsed;
+    public FileExtensions FileExtensions;
+    public int ResultsLimit;
+}
 public class Cmdlets
 {
     [Cmdlet("Set", "DirectoryPredictorOption")]
@@ -13,9 +19,8 @@ public class Cmdlets
             get => _fileExtensions.GetValueOrDefault();
             set => _fileExtensions = value;
         }
-        internal FileExtensions? _fileExtensions = FileExtensions.Include;
+        internal FileExtensions? _fileExtensions;
 
-        //Bug 1 - Part 2
         [Parameter]
         [ValidateRange(1, 500)]
         public int ResultsLimit
@@ -23,18 +28,30 @@ public class Cmdlets
             get => _resultsLimit.GetValueOrDefault();
             set => _resultsLimit = value;
         }
-        internal int? _resultsLimit = 10;
+        internal int? _resultsLimit;
 
-        protected override void BeginProcessing()
+        public static DirectoryPredictorOptions _options = new DirectoryPredictorOptions
         {
-            SessionState.PSVariable.Set("FileExtensions", FileExtensions);
-            SessionState.PSVariable.Set("ResultsLimit", ResultsLimit); //Bug 1 - Part 3 - Last
+            OptionsUsed = false,
+            FileExtensions = FileExtensions.None,
+            ResultsLimit = 10,
+        };
+
+        protected override void ProcessRecord()
+        {
+            _options.OptionsUsed = true;
+
+            if (FileExtensions != FileExtensions.None)
+                _options.FileExtensions = FileExtensions;
+
+            if (ResultsLimit > 0)
+                _options.ResultsLimit = ResultsLimit;
+        }
+
+        protected override void EndProcessing()
+        {
+            SessionState.PSVariable.Set("FileExtensions", _options.FileExtensions);
+            SessionState.PSVariable.Set("ResultsLimit", _options.ResultsLimit);
         }
     }
-}
-
-public enum FileExtensions
-{
-    Include,
-    Exclude
 }

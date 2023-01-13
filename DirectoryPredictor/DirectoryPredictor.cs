@@ -2,6 +2,7 @@
 using System.Management.Automation.Runspaces;
 using System.Management.Automation.Subsystem.Prediction;
 using System.Management.Automation;
+using static DirectoryPredictor.Cmdlets;
 
 namespace DirectoryPredictor;
 
@@ -9,8 +10,8 @@ public partial class DirectoryPredictor : PSCmdlet, ICommandPredictor, IDisposab
 {
     private readonly Guid _guid;
     private Runspace _runspace { get; }
-    public bool _includeFileExtensions = true;
-    public int _resultsLimit = 10;
+    public bool _includeFileExtensions;
+    public int _resultsLimit;
     
     internal DirectoryPredictor(string guid)
     {
@@ -18,6 +19,11 @@ public partial class DirectoryPredictor : PSCmdlet, ICommandPredictor, IDisposab
         _runspace = RunspaceFactory.CreateRunspace(InitialSessionState.CreateDefault());
         _runspace.Open();
 
+        _includeFileExtensions = SetDirectoryPredictorOption._options.FileExtensions == FileExtensions.None 
+            || SetDirectoryPredictorOption._options.FileExtensions == FileExtensions.Include;
+
+        _resultsLimit = SetDirectoryPredictorOption._options.ResultsLimit;
+        
         RegisterEvents();
     }
 
