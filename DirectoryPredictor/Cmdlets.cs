@@ -3,9 +3,15 @@ using System.Management.Automation;
 
 namespace DirectoryPredictor;
 
-public class DirectoryPredictorOptions
+public sealed class DirectoryPredictorOptions
 {
+    private static readonly DirectoryPredictorOptions _instance = new DirectoryPredictorOptions();
+    public static DirectoryPredictorOptions Instance => _instance;
+    static DirectoryPredictorOptions() { }
+    private DirectoryPredictorOptions() { }
+
     public FileExtensions FileExtensions = FileExtensions.None;
+
     public int? ResultsLimit = 10;
 } 
 public class Cmdlets
@@ -30,7 +36,7 @@ public class Cmdlets
         }
         internal int? _resultsLimit;
 
-        private static readonly DirectoryPredictorOptions _options = new();
+        private static readonly DirectoryPredictorOptions _options = DirectoryPredictorOptions.Instance;
         public static DirectoryPredictorOptions Options => _options;
 
         protected override void EndProcessing()
