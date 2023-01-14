@@ -1,13 +1,13 @@
-﻿using System.Management.Automation;
+﻿using Microsoft.CodeAnalysis;
+using System.Management.Automation;
 
 namespace DirectoryPredictor;
 
-public struct DirectoryPredictorOptions
+public class DirectoryPredictorOptions
 {
-    public bool OptionsUsed;
-    public FileExtensions FileExtensions;
-    public int ResultsLimit;
-}
+    public FileExtensions FileExtensions = FileExtensions.None;
+    public int? ResultsLimit = 10;
+} 
 public class Cmdlets
 {
     [Cmdlet("Set", "DirectoryPredictorOption")]
@@ -19,7 +19,7 @@ public class Cmdlets
             get => _fileExtensions.GetValueOrDefault();
             set => _fileExtensions = value;
         }
-        internal FileExtensions? _fileExtensions;
+        internal FileExtensions? _fileExtensions = FileExtensions.None;
 
         [Parameter]
         [ValidateRange(1, 500)]
@@ -30,28 +30,19 @@ public class Cmdlets
         }
         internal int? _resultsLimit;
 
-        public static DirectoryPredictorOptions _options = new DirectoryPredictorOptions
-        {
-            OptionsUsed = false,
-            FileExtensions = FileExtensions.None,
-            ResultsLimit = 10,
-        };
-
-        protected override void ProcessRecord()
-        {
-            _options.OptionsUsed = true;
-
-            if (FileExtensions != FileExtensions.None)
-                _options.FileExtensions = FileExtensions;
-
-            if (ResultsLimit > 0)
-                _options.ResultsLimit = ResultsLimit;
-        }
+        private static readonly DirectoryPredictorOptions _options = new();
+        public static DirectoryPredictorOptions Options => _options;
 
         protected override void EndProcessing()
         {
-            SessionState.PSVariable.Set("FileExtensions", _options.FileExtensions);
-            SessionState.PSVariable.Set("ResultsLimit", _options.ResultsLimit);
+            if (FileExtensions != FileExtensions.None)
+            {
+                Options.FileExtensions = FileExtensions;
+            }
+            if (ResultsLimit > 0)
+            {
+                Options.ResultsLimit = ResultsLimit;
+            }
         }
     }
 }

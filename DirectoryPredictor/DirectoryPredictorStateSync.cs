@@ -1,6 +1,5 @@
 ﻿using System.Management.Automation.Runspaces;
 using System.Management.Automation;
-using static DirectoryPredictor.Cmdlets;
 
 namespace DirectoryPredictor;
 
@@ -33,17 +32,6 @@ public partial class DirectoryPredictor
     {
         PathInfo currentPath = source.SessionStateProxy.Path.CurrentLocation;
         _runspace.SessionStateProxy.Path.SetLocation(currentPath.Path);
-      
-        if (SetDirectoryPredictorOption._options.OptionsUsed)
-        {
-            var tempFile = (FileExtensions)source.SessionStateProxy.GetVariable("FileExtensions");
-            _includeFileExtensions = tempFile == FileExtensions.Include || tempFile == FileExtensions.None;
-            _runspace.SessionStateProxy.PSVariable.Set("FileExtensions", tempFile);
-
-            var tempResults = (int)source.SessionStateProxy.GetVariable("ResultsLimit");
-            _resultsLimit = tempResults;
-            _runspace.SessionStateProxy.PSVariable.Set("ResultsLimit", tempResults);
-        }
     }
 
     private void RegisterEvents()

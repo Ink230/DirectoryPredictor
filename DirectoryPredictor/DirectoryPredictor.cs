@@ -8,30 +8,25 @@ namespace DirectoryPredictor;
 
 public partial class DirectoryPredictor : PSCmdlet, ICommandPredictor, IDisposable
 {
+    #region "boilerplate"
     private readonly Guid _guid;
     private Runspace _runspace { get; }
-    public bool _includeFileExtensions;
-    public int _resultsLimit;
-    
+
     internal DirectoryPredictor(string guid)
     {
         _guid = new Guid(guid);
         _runspace = RunspaceFactory.CreateRunspace(InitialSessionState.CreateDefault());
         _runspace.Open();
-
-        _includeFileExtensions = SetDirectoryPredictorOption._options.FileExtensions == FileExtensions.None 
-            || SetDirectoryPredictorOption._options.FileExtensions == FileExtensions.Include;
-
-        _resultsLimit = SetDirectoryPredictorOption._options.ResultsLimit;
         
         RegisterEvents();
     }
-
+    
     public Guid Id => _guid;
 
     public string Name => "Directory";
 
     public string Description => "Directory predictor";
+    #endregion
 
     public SuggestionPackage GetSuggestion(PredictionClient client, PredictionContext context, CancellationToken cancellationToken)
     {
@@ -55,6 +50,9 @@ public partial class DirectoryPredictor : PSCmdlet, ICommandPredictor, IDisposab
         {
             return default;
         }
+
+        var _includeFileExtensions = SetDirectoryPredictorOption.Options.FileExtensions is FileExtensions.None or FileExtensions.Include;
+        var _resultsLimit = SetDirectoryPredictorOption.Options.ResultsLimit.GetValueOrDefault();
 
         string searchText = (input?.Split(' ')?.LastOrDefault()?.ToLower()) ?? "";
         string returnInput = (input?.Split(' ')?.FirstOrDefault()) ?? "";
