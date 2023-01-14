@@ -52,6 +52,11 @@ public partial class DirectoryPredictor : PSCmdlet, ICommandPredictor, IDisposab
 
         var resultsLimit = DirectoryPredictorOptions.Options.ResultsLimit.GetValueOrDefault();
 
+        var ignoreCommands = DirectoryPredictorOptions.Options.GetIgnoreCommands();
+        int firstWordIndex = input.IndexOf(' ');
+        string command = input.Substring(0, firstWordIndex);
+        if (ignoreCommands.Any(c => c == command)) return default; //future wildcard * support possible
+
         // Parse the cmdline's input
         int lastWordIndex = input.LastIndexOf(' ');
         string searchText = input.Substring(lastWordIndex + 1);
