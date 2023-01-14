@@ -2,13 +2,12 @@
 using System.Management.Automation.Runspaces;
 using System.Management.Automation.Subsystem.Prediction;
 using System.Management.Automation;
-using static DirectoryPredictor.Cmdlets;
 
 namespace DirectoryPredictor;
 
 public partial class DirectoryPredictor : PSCmdlet, ICommandPredictor, IDisposable
 {
-    #region "boilerplate"
+    #region "Boilerplate"
     private readonly Guid _guid;
     private Runspace _runspace { get; }
 
@@ -33,6 +32,7 @@ public partial class DirectoryPredictor : PSCmdlet, ICommandPredictor, IDisposab
         Token token = context.TokenAtCursor;
         string input = context.InputAst.Extent.Text;
 
+        #region "Validators"
         // Null token processing hinders performance, let us avoid it
         if (token is null) return default;
 
@@ -41,34 +41,34 @@ public partial class DirectoryPredictor : PSCmdlet, ICommandPredictor, IDisposab
 
         // Input string white space or rare null inputs serve no purpose
         if (string.IsNullOrWhiteSpace(input)) return default;
+        #endregion
 
-        //Get all the options that have been set for convenience
+        // Get all the options and configure them
         var includeFileExtensions = DirectoryPredictorOptions.Options.IncludeFileExtensions();
-        var resultsLimit = DirectoryPredictorOptions.Options.ResultsLimit.GetValueOrDefault();
-
-        //Get the last word in the input to use as the search pattern for the file names
-        //string searchText = (input?.Split(' ')?.LastOrDefault()?.ToLower()) ?? "";
-
-        //We need to show the user their initial input text for selection purposes
-        //TODO: take everything but the last word
-        //string returnInput = (input?.Split(' ')?.FirstOrDefault()) ?? "";
-        int lastWordIndex = input.LastIndexOf(' ');
-        string searchText = input.Substring(lastWordIndex + 1);
-        string returnInput = input.Substring(0, lastWordIndex);
-
-        var pattern = searchText + "*.*";
-        var dir = _runspace.SessionStateProxy.Path.CurrentLocation.ToString();
 
         Func<string, string> getFileName = includeFileExtensions ?
             (file => Path.GetFileName(file).ToLower()) :
             (file => Path.GetFileNameWithoutExtension(file).ToLower());
 
+        var resultsLimit = DirectoryPredictorOptions.Options.ResultsLimit.GetValueOrDefault();
+
+        // Parse the cmdline's input
+        int lastWordIndex = input.LastIndexOf(' ');
+        string searchText = input.Substring(lastWordIndex + 1);
+        string returnInput = input.Substring(0, lastWordIndex);
+
+        // Configure the search pattern and the directory to search in
+        var pattern = searchText + "*.*";
+        var dir = _runspace.SessionStateProxy.Path.CurrentLocation.ToString();
+
+        // Get the filenames from the dir that match all the conditions
         string[] files = Directory.GetFiles(dir, pattern, SearchOption.TopDirectoryOnly)
                     .Catch(typeof(UnauthorizedAccessException))
                     .Select(getFileName)
                     .Take(resultsLimit)
                     .ToArray();
 
+        // Insert each one as a suggestion and prep to return
         List<PredictiveSuggestion> listOfMatches = files.Select(file => new PredictiveSuggestion($"{returnInput} {file}")).ToList();
 
         return new SuggestionPackage(listOfMatches);
