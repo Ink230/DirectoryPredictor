@@ -30,40 +30,44 @@ public partial class DirectoryPredictor : PSCmdlet, ICommandPredictor, IDisposab
 
     public SuggestionPackage GetSuggestion(PredictionClient client, PredictionContext context, CancellationToken cancellationToken)
     {
-        Token tokenAtCursor = context.TokenAtCursor;
-
-        //White space is intensive, skip it in all cases
-        if (tokenAtCursor is null)
-        {
-            return default;
-        }
-
-        //Skip parsing commands as they are not needed in directory searches
-        if (tokenAtCursor is not null && tokenAtCursor.TokenFlags.HasFlag(TokenFlags.CommandName))
-        {
-            return default;
-        }
-        
-        //Skip if the input is blank
+        Token token = context.TokenAtCursor;
         string input = context.InputAst.Extent.Text;
-        if (string.IsNullOrWhiteSpace(input))
-        {
-            return default;
-        }
 
-        var _includeFileExtensions = SetDirectoryPredictorOption.Options.FileExtensions is FileExtensions.None or FileExtensions.Include;
-        var _resultsLimit = SetDirectoryPredictorOption.Options.ResultsLimit.GetValueOrDefault();
+        // Null token processing hinders performance, let us avoid it
+        if (token is null) return default;
 
-        string searchText = (input?.Split(' ')?.LastOrDefault()?.ToLower()) ?? "";
-        string returnInput = (input?.Split(' ')?.FirstOrDefault()) ?? "";
+        // Ignore parsing commands as that serves no purpose
+        if (token is not null && token.TokenFlags.HasFlag(TokenFlags.CommandName)) return default;
+
+        // Input string white space or rare null inputs serve no purpose
+        if (string.IsNullOrWhiteSpace(input)) return default;
+
+        //Get all the options that have been set for convenience
+        var includeFileExtensions = DirectoryPredictorOptions.Options.IncludeFileExtensions();
+        var resultsLimit = DirectoryPredictorOptions.Options.ResultsLimit.GetValueOrDefault();
+
+        //Get the last word in the input to use as the search pattern for the file names
+        //string searchText = (input?.Split(' ')?.LastOrDefault()?.ToLower()) ?? "";
+
+        //We need to show the user their initial input text for selection purposes
+        //TODO: take everything but the last word
+        //string returnInput = (input?.Split(' ')?.FirstOrDefault()) ?? "";
+        int lastWordIndex = input.LastIndexOf(' ');
+        string searchText = input.Substring(lastWordIndex + 1);
+        string returnInput = input.Substring(0, lastWordIndex);
+
         var pattern = searchText + "*.*";
         var dir = _runspace.SessionStateProxy.Path.CurrentLocation.ToString();
 
+        Func<string, string> getFileName = includeFileExtensions ?
+            (file => Path.GetFileName(file).ToLower()) :
+            (file => Path.GetFileNameWithoutExtension(file).ToLower());
+
         string[] files = Directory.GetFiles(dir, pattern, SearchOption.TopDirectoryOnly)
-            .Catch(typeof(UnauthorizedAccessException))
-            .Select(file => _includeFileExtensions ? Path.GetFileName(file).ToLower() : Path.GetFileNameWithoutExtension(file).ToLower())
-            .Take(_resultsLimit)
-            .ToArray();
+                    .Catch(typeof(UnauthorizedAccessException))
+                    .Select(getFileName)
+                    .Take(resultsLimit)
+                    .ToArray();
 
         List<PredictiveSuggestion> listOfMatches = files.Select(file => new PredictiveSuggestion($"{returnInput} {file}")).ToList();
 

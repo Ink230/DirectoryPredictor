@@ -5,14 +5,19 @@ namespace DirectoryPredictor;
 
 public sealed class DirectoryPredictorOptions
 {
-    private static readonly DirectoryPredictorOptions _instance = new DirectoryPredictorOptions();
-    public static DirectoryPredictorOptions Instance => _instance;
+    private static readonly DirectoryPredictorOptions _options = new DirectoryPredictorOptions();
+    public static DirectoryPredictorOptions Options => _options;
     static DirectoryPredictorOptions() { }
     private DirectoryPredictorOptions() { }
 
-    public FileExtensions FileExtensions = FileExtensions.None;
+    public FileExtensions FileExtensions { get; set; } = FileExtensions.None;
 
-    public int? ResultsLimit = 10;
+    public bool IncludeFileExtensions()
+    {
+        return (FileExtensions == FileExtensions.None || FileExtensions == FileExtensions.Include) ;
+    }
+
+    public int? ResultsLimit { get; set; } = 10;
 } 
 public class Cmdlets
 {
@@ -36,7 +41,7 @@ public class Cmdlets
         }
         internal int? _resultsLimit;
 
-        private static readonly DirectoryPredictorOptions _options = DirectoryPredictorOptions.Instance;
+        private static readonly DirectoryPredictorOptions _options = DirectoryPredictorOptions.Options;
         public static DirectoryPredictorOptions Options => _options;
 
         protected override void EndProcessing()
