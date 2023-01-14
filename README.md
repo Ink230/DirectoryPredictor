@@ -4,7 +4,7 @@
 
 The Directory Predictor permits live directory lookups for PSReadLine's auto-complete functionality. 
 
-https://user-images.githubusercontent.com/29797557/211944927-5a849c78-f700-4ce8-b3e2-819a8bf4a75a.mp4
+https://user-images.githubusercontent.com/29797557/212500726-26f98466-dd21-46e1-b793-a08c803e2c23.mp4
 
 You will currently need to enable ExperimentalFeatures in PowerShell 7.3.0+.
 
@@ -47,45 +47,61 @@ Download the relevant .dll release and place where desired. In your $profile
 
 # Configuration
 
-There is an options cmdlet with a single options parameter that takes Include or Exclude
+### FileExtensions
+Determine if file extensions should show or not in the prediction and in the autocomplete result.
   
-```Set-DirectoryPredictorOption -FileExtensions <Include | Exclude>```
+```Set-DirectoryPredictorOption -FileExtensions <string> [Include | Exclude]```
 
-You can disable the regular history results and only use the plugin with
+### ResultsLimit
+Specify how many results, from 1 to 10, to display. 10 is a current limit by PSReadLine but the module will accept up to 500 currently.
 
-```Set-PSReadLineOption -PredictionSource Plugin```
+```Set-DirectoryPredictorOption -ResultsLimit <int> [1-10]```
+
+### IgnoreCommands
+Ignore specific commands in a comma separated string. This will cause those commands to not display [Directory] suggestions.
+
+```Set-DirectoryPredictorOption -IgnoreCommands <string> [comma separated list]```
+
+### Tips
+* Each of these flags work great with aliases for fast on the fly adjustments
+* Example
+  ```
+   Function ShowExtensions5 {
+      Set-DirectoryPredictorOption -FileExtensions Include
+   }
+   Set-Alias -Name se -Value ShowExtensions
+
+   Function HideExtensions {
+   Set-DirectoryPredictorOption -FileExtensions Exclude
+   }
+   Set-Alias -Name he -Value HideExtensions
+   ```
+
+* You can disable the regular history results and only use the plugin with
+  
+  ```Set-PSReadLineOption -PredictionSource Plugin```
 
 # Behaviour
 
 - Only files are searched and only one directory deep
 - All symbols but spaces are respected
-- Only the last word is used to search (no multiword expressions)
+- Only the last word is used to search but previous input is respected
+  - ```code -n hel``` will work and will match "hel" to filenames
 - Commands are ignored and no searching will display with just a command
-- File extensions can be toggled on or off via $profile
 - Accepted completions are saved to the regular history at this time
 - Check the intro gif above for more insight
 
 # Roadmap
 
-### More Cmdlet Option Parameters
-- -ResultsLimit: Limit results from 1 to 10 (current max in PSReadLine)
-- -Folders: <Include | Exclude> | Discussion on the behaviour is needed
+As of v0.0.4, the plan is to gather user suggestions and some contributors to the project.
 
-The main roadblock is that an attempted -ResultsLimit was implemented. With a second options parameter in $profile, the original FileExtensions flag ceased to work. The session state is desynced, thread unsafe with >1 parameter or is being overwritten.
-
-A better means of sharing state from the Cmdlet parameters is needed in the GetSuggestion method, either using the proper documented means or using a lock. The plan is to create a separate branch and work on it as time permits.
-
-### Further Issues
-
-Once the main issue of multiple options is solved and the implementation of the Cmdlet's is verified, further issues can be addressed in the Issue Tracker formally.
+If you have an idea, suggestion or want to contribute, please open an Issue!
 
 # Disclaimers
 
-1. The projects is currently a learning experience for all involved.
+1. This is dabbling in ExperimentalFeatures that come with a warning of *breaking changes* or *unexpected behaviour*.
 
-2. This is dabbling in ExperimentalFeatures that come with a warning of *breaking changes* or *unexpected behaviour*.
-
-3. The intended purpose of PSReadLine predictive plugins are to be predictive. This predictor does not predict anything.
+2. The intended purpose of PSReadLine predictive plugins are to be predictive. This predictor does not predict anything.
 
 # Credit / Resources
 ### [PSReadLine Github](https://github.com/PowerShell/PSReadLine)
