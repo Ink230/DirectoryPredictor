@@ -18,6 +18,13 @@ public sealed class DirectoryPredictorOptions
     }
 
     public int? ResultsLimit { get; set; } = 10;
+
+    public string IgnoreCommands { get; set; } = string.Empty;
+
+    public string[] GetIgnoreCommands()
+    {
+        return IgnoreCommands.Split(',');
+    }
 } 
 public class Cmdlets
 {
@@ -41,6 +48,15 @@ public class Cmdlets
         }
         internal int? _resultsLimit;
 
+        [Parameter]
+        [ValidateLength(0, 1000)]
+        public string IgnoreCommands
+        {
+            get => _ignoreCommands ?? string.Empty;
+            set => _ignoreCommands = value;
+        }
+        internal string? _ignoreCommands;
+
         private static readonly DirectoryPredictorOptions _options = DirectoryPredictorOptions.Options;
         public static DirectoryPredictorOptions Options => _options;
 
@@ -53,6 +69,11 @@ public class Cmdlets
             if (ResultsLimit > 0)
             {
                 Options.ResultsLimit = ResultsLimit;
+            }
+
+            if (!string.IsNullOrWhiteSpace(IgnoreCommands))
+            {
+                Options.IgnoreCommands = IgnoreCommands;
             }
         }
     }
