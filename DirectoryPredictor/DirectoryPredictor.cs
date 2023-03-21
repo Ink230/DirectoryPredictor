@@ -1,7 +1,7 @@
-﻿using System.Management.Automation.Language;
+﻿using System.Management.Automation;
+using System.Management.Automation.Language;
 using System.Management.Automation.Runspaces;
 using System.Management.Automation.Subsystem.Prediction;
-using System.Management.Automation;
 
 namespace DirectoryPredictor;
 
@@ -15,11 +15,12 @@ public partial class DirectoryPredictor : PSCmdlet, ICommandPredictor, IDisposab
     {
         _guid = new Guid(guid);
         _runspace = RunspaceFactory.CreateRunspace(InitialSessionState.CreateDefault());
+        _runspace.Name = this.GetType().Name;
         _runspace.Open();
-        
+
         RegisterEvents();
     }
-    
+
     public Guid Id => _guid;
 
     public string Name => "Directory";
