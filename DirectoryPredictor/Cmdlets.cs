@@ -41,12 +41,12 @@ public class Cmdlets
         internal FileExtensions? _fileExtensions = FileExtensions.None;
 
         [Parameter]
-        public bool ShowFolders
+        public bool DirectoryMode
         {
-            get => _showFolders.GetValueOrDefault();
-            set => _showFolders = value;
+            get => _directoryMode.GetValueOrDefault();
+            set => _directoryMode = value;
         }
-        internal bool? _showFolders = false;
+        internal bool? _directoryMode = false;
 
         [Parameter]
         [ValidateRange(1, 500)]
@@ -76,9 +76,9 @@ public class Cmdlets
                 Options.FileExtensions = FileExtensions;
             }
 
-            if (ShowFolders)
+            if (DirectoryMode)
             {
-                Options.ShowFolders = ShowFolders;
+                Options.ShowFolders = DirectoryMode;
             }
 
             if (ResultsLimit > 0)
