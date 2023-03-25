@@ -45,6 +45,8 @@ public partial class DirectoryPredictor : PSCmdlet, ICommandPredictor, IDisposab
         #endregion
 
         // Get all the options and configure them
+        var directoryMode = DirectoryPredictorOptions.Options.DirectoryMode;
+
         var includeFileExtensions = DirectoryPredictorOptions.Options.IncludeFileExtensions();
 
         Func<string, string> getFileName = includeFileExtensions ?
