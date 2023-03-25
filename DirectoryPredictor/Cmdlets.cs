@@ -16,7 +16,7 @@ public sealed class DirectoryPredictorOptions
         return (FileExtensions == FileExtensions.None || FileExtensions == FileExtensions.Include);
     }
 
-    public bool ShowFolders { get; set; } = false;
+    public bool DirectoryMode { get; set; } = false;
 
     public int? ResultsLimit { get; set; } = 10;
 
@@ -78,7 +78,7 @@ public class Cmdlets
 
             if (DirectoryMode)
             {
-                Options.ShowFolders = DirectoryMode;
+                Options.DirectoryMode = DirectoryMode;
             }
 
             if (ResultsLimit > 0)
