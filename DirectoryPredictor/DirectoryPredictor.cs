@@ -47,11 +47,14 @@ public partial class DirectoryPredictor : PSCmdlet, ICommandPredictor, IDisposab
         // Get all the options and configure them
         var directoryMode = DirectoryPredictorOptions.Options.DirectoryMode;
 
+
         var includeFileExtensions = DirectoryPredictorOptions.Options.IncludeFileExtensions();
 
         Func<string, string> getFileName = includeFileExtensions ?
             (file => Path.GetFileName(file).ToLower()) :
             (file => Path.GetFileNameWithoutExtension(file).ToLower());
+
+        Func<string, string> getFolderName = dir => Path.GetDirectoryName(dir).ToString().ToLower();
 
         var resultsLimit = DirectoryPredictorOptions.Options.ResultsLimit.GetValueOrDefault();
 
@@ -76,8 +79,16 @@ public partial class DirectoryPredictor : PSCmdlet, ICommandPredictor, IDisposab
                     .Take(resultsLimit)
                     .ToArray();
 
+        string[] folders = Directory.GetDirectories(dir, pattern, SearchOption.TopDirectoryOnly)
+            .Catch(typeof(UnauthorizedAccessException))
+            .Select(directory => getFolderName(directory))
+            .Take(resultsLimit)
+            .ToArray();
+
         // Insert each one as a suggestion and prep to return
-        List<PredictiveSuggestion> listOfMatches = files.Select(file => new PredictiveSuggestion($"{returnInput} {file}")).ToList();
+        List<PredictiveSuggestion> listOfMatches = DirectoryPredictorOptions.Options.DirectoryMode ?
+            files.Select(file => new PredictiveSuggestion($"{returnInput} {file}")).ToList() :
+            folders.Select(file => new PredictiveSuggestion($"{returnInput} {file}")).ToList();
 
         return new SuggestionPackage(listOfMatches);
     }
