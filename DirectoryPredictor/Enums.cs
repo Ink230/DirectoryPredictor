@@ -6,3 +6,10 @@ public enum FileExtensions
     Include,
     Exclude
 }
+
+public enum DirectoryMode
+{
+    None,
+    Files,
+    Folders
+}

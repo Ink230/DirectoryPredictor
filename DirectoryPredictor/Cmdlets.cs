@@ -16,7 +16,12 @@ public sealed class DirectoryPredictorOptions
         return (FileExtensions == FileExtensions.None || FileExtensions == FileExtensions.Include);
     }
 
-    public bool DirectoryMode { get; set; } = false;
+    public DirectoryMode DirectoryMode { get; set; } = DirectoryMode.None;
+
+    public bool DirectoryModeOn()
+    {
+        return (DirectoryMode == DirectoryMode.Folders);
+    }
 
     public int? ResultsLimit { get; set; } = 10;
 
@@ -41,12 +46,12 @@ public class Cmdlets
         internal FileExtensions? _fileExtensions = FileExtensions.None;
 
         [Parameter]
-        public bool DirectoryMode
+        public DirectoryMode DirectoryMode
         {
             get => _directoryMode.GetValueOrDefault();
             set => _directoryMode = value;
         }
-        internal bool? _directoryMode = false;
+        internal DirectoryMode? _directoryMode = DirectoryMode.None;
 
         [Parameter]
         [ValidateRange(1, 500)]
@@ -76,7 +81,7 @@ public class Cmdlets
                 Options.FileExtensions = FileExtensions;
             }
 
-            if (DirectoryMode)
+            if (DirectoryMode != DirectoryMode.None)
             {
                 Options.DirectoryMode = DirectoryMode;
             }
