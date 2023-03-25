@@ -1,5 +1,4 @@
-﻿using Microsoft.CodeAnalysis;
-using System.Management.Automation;
+﻿using System.Management.Automation;
 
 namespace DirectoryPredictor;
 
@@ -14,8 +13,10 @@ public sealed class DirectoryPredictorOptions
 
     public bool IncludeFileExtensions()
     {
-        return (FileExtensions == FileExtensions.None || FileExtensions == FileExtensions.Include) ;
+        return (FileExtensions == FileExtensions.None || FileExtensions == FileExtensions.Include);
     }
+
+    public bool ShowFolders { get; set; } = false;
 
     public int? ResultsLimit { get; set; } = 10;
 
@@ -25,7 +26,7 @@ public sealed class DirectoryPredictorOptions
     {
         return IgnoreCommands.Split(',');
     }
-} 
+}
 public class Cmdlets
 {
     [Cmdlet("Set", "DirectoryPredictorOption")]
@@ -38,6 +39,14 @@ public class Cmdlets
             set => _fileExtensions = value;
         }
         internal FileExtensions? _fileExtensions = FileExtensions.None;
+
+        [Parameter]
+        public bool ShowFolders
+        {
+            get => _showFolders.GetValueOrDefault();
+            set => _showFolders = value;
+        }
+        internal bool? _showFolders = false;
 
         [Parameter]
         [ValidateRange(1, 500)]
@@ -66,6 +75,12 @@ public class Cmdlets
             {
                 Options.FileExtensions = FileExtensions;
             }
+
+            if (ShowFolders)
+            {
+                Options.ShowFolders = ShowFolders;
+            }
+
             if (ResultsLimit > 0)
             {
                 Options.ResultsLimit = ResultsLimit;
