@@ -95,8 +95,8 @@ As of v0.0.4, the plan is to gather user suggestions!
 
 If you have an idea, suggestion or want to contribute, please open an Issue!
 
-• Folder mode is currently being developed
-• Pattern matching (* wildcard for files, ? for folder mode listing all files...etc) is next
+- Folder mode is currently being developed
+- Pattern matching (* wildcard for files, ? for folder mode listing all files...etc) is next
 
 # Disclaimers
 
