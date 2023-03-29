@@ -32,16 +32,7 @@ public partial class DirectoryPredictor : ICommandPredictor, IDisposable
         Token token = context.TokenAtCursor;
         string input = context.InputAst.Extent.Text;
 
-        #region "Validators"
-        // Null token processing hinders performance, let us avoid it
-        if (token is null) return default;
-
-        // Ignore parsing commands as that serves no purpose
-        if (token is not null && token.TokenFlags.HasFlag(TokenFlags.CommandName)) return default;
-
-        // Input string white space or rare null inputs serve no purpose
-        if (string.IsNullOrWhiteSpace(input)) return default;
-        #endregion
+        if (!ValidateInput(token, input)) return default;
 
         // Get all the options and configure them
         var directoryMode = DirectoryPredictorOptions.Options.DirectoryModeOn();
@@ -85,6 +76,17 @@ public partial class DirectoryPredictor : ICommandPredictor, IDisposable
         List<PredictiveSuggestion> listOfMatches = files.Select(file => new PredictiveSuggestion($"{returnInput} {file}")).ToList();
 
         return new SuggestionPackage(listOfMatches);
+    }
+
+    private bool ValidateInput(Token token, string input)
+    {
+        if (token is null) return default;
+
+        if (token is not null && token.TokenFlags.HasFlag(TokenFlags.CommandName)) return default;
+
+        if (string.IsNullOrWhiteSpace(input)) return default;
+
+        return true;
     }
 
     public void Dispose()
