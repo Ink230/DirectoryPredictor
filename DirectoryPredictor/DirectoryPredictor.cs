@@ -1,11 +1,10 @@
-﻿using System.Management.Automation;
-using System.Management.Automation.Language;
+﻿using System.Management.Automation.Language;
 using System.Management.Automation.Runspaces;
 using System.Management.Automation.Subsystem.Prediction;
 
 namespace DirectoryPredictor;
 
-public partial class DirectoryPredictor : PSCmdlet, ICommandPredictor, IDisposable
+public partial class DirectoryPredictor : ICommandPredictor, IDisposable
 {
     #region "Boilerplate"
     private readonly Guid _guid;
