@@ -36,6 +36,7 @@ public partial class DirectoryPredictor : ICommandPredictor, IDisposable
         string input = context.InputAst.Extent.Text;
 
         if (!ValidateInput(token, input)) return default;
+
         // Get all the options and configure them
         var directoryMode = Options.DirectoryModeOn();
 
@@ -84,7 +85,7 @@ public partial class DirectoryPredictor : ICommandPredictor, IDisposable
     {
         if (token is null) return false;
 
-        if (token is not null && token.TokenFlags.HasFlag(TokenFlags.CommandName)) return false;
+        if (token.TokenFlags.HasFlag(TokenFlags.CommandName)) return false;
 
         if (string.IsNullOrWhiteSpace(input)) return false;
 
