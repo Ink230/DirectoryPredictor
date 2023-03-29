@@ -2,11 +2,9 @@
 
 # Directory Predictor
 
-The Directory Predictor permits live directory lookups for PSReadLine's auto-complete functionality. 
+The Directory Predictor permits live directory file lookups for PSReadLine's auto-complete functionality. 
 
 https://user-images.githubusercontent.com/29797557/212500726-26f98466-dd21-46e1-b793-a08c803e2c23.mp4
-
-You will currently need to enable ExperimentalFeatures in PowerShell 7.3.0+.
 
 # Installation
 
@@ -22,7 +20,7 @@ Download the relevant .dll release and place where desired. In your $profile
 
 ### PowerShell Configurations
 
-1. Add the following to your $profile and restart the shell once or twice
+1. Add the following to your $profile
 
    ```Enable-ExperimentalFeature PSSubsystemPluginModel```
 
@@ -83,7 +81,7 @@ Ignore specific commands in a comma separated string. This will cause those comm
 
 # Behaviour
 
-- Only files are searched and only one directory deep
+- Only files are searched and only one directory deep (folder mode in the works)
 - All symbols but spaces are respected
 - Only the last word is used to search but previous input is respected
   - ```code -n hel``` will work and will match "hel" to filenames
@@ -93,9 +91,12 @@ Ignore specific commands in a comma separated string. This will cause those comm
 
 # Roadmap
 
-As of v0.0.4, the plan is to gather user suggestions and some contributors to the project.
+As of v0.0.4, the plan is to gather user suggestions!
 
 If you have an idea, suggestion or want to contribute, please open an Issue!
+
+- Folder mode is currently being developed
+- Pattern matching (* wildcard for files, ? for folder mode listing all files...etc) is next
 
 # Disclaimers
 
