@@ -9,6 +9,7 @@ public partial class DirectoryPredictor : ICommandPredictor, IDisposable
     #region "Boilerplate"
     private readonly Guid _guid;
     private Runspace _runspace { get; }
+    private DirectoryPredictorOptions Options { get; }
 
     internal DirectoryPredictor(string guid)
     {
@@ -16,6 +17,8 @@ public partial class DirectoryPredictor : ICommandPredictor, IDisposable
         _runspace = RunspaceFactory.CreateRunspace(InitialSessionState.CreateDefault());
         _runspace.Name = this.GetType().Name;
         _runspace.Open();
+
+        Options = DirectoryPredictorOptions.Options;
 
         RegisterEvents();
     }
@@ -33,19 +36,18 @@ public partial class DirectoryPredictor : ICommandPredictor, IDisposable
         string input = context.InputAst.Extent.Text;
 
         if (!ValidateInput(token, input)) return default;
-
         // Get all the options and configure them
-        var directoryMode = DirectoryPredictorOptions.Options.DirectoryModeOn();
+        var directoryMode = Options.DirectoryModeOn();
 
-        var includeFileExtensions = DirectoryPredictorOptions.Options.IncludeFileExtensions();
+        var includeFileExtensions = Options.IncludeFileExtensions();
 
         Func<string, string> getFileName = includeFileExtensions ?
             (file => Path.GetFileName(file).ToLower()) :
             (file => Path.GetFileNameWithoutExtension(file).ToLower());
 
-        var resultsLimit = DirectoryPredictorOptions.Options.ResultsLimit.GetValueOrDefault();
+        var resultsLimit = Options.ResultsLimit.GetValueOrDefault();
 
-        var ignoreCommands = DirectoryPredictorOptions.Options.GetIgnoreCommands();
+        var ignoreCommands = Options.GetIgnoreCommands();
         int firstWordIndex = input.IndexOf(' ');
         string command = input.Substring(0, firstWordIndex);
         if (ignoreCommands.Any(c => c == command)) return default; //future wildcard * support possible
@@ -80,11 +82,11 @@ public partial class DirectoryPredictor : ICommandPredictor, IDisposable
 
     private bool ValidateInput(Token token, string input)
     {
-        if (token is null) return default;
+        if (token is null) return false;
 
-        if (token is not null && token.TokenFlags.HasFlag(TokenFlags.CommandName)) return default;
+        if (token is not null && token.TokenFlags.HasFlag(TokenFlags.CommandName)) return false;
 
-        if (string.IsNullOrWhiteSpace(input)) return default;
+        if (string.IsNullOrWhiteSpace(input)) return false;
 
         return true;
     }
