@@ -78,7 +78,7 @@ public partial class DirectoryPredictor : ICommandPredictor, IDisposable
     private string[] GetDirectorySearchResults(string input)
     {
         var lastWordIndex = input.LastIndexOf(' ');
-        var searchText = input.Substring(lastWordIndex);
+        var searchText = input.Substring(lastWordIndex + 1);
 
         var pattern = searchText + "*.*";
         var dir = _runspace.SessionStateProxy.Path.CurrentLocation.ToString();
