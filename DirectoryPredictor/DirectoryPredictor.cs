@@ -13,6 +13,8 @@ public partial class DirectoryPredictor : ICommandPredictor, IDisposable
     private DirectoryPredictorOptions Options { get; }
     private bool DirectoryMode { get; }
     private bool IncludeFileExtensions { get; }
+    private int ResultsLimit { get; }
+    private string[] IgnoreCommands { get; }
 
     public Guid Id => _guid;
     public string Name => "Directory";
@@ -28,6 +30,8 @@ public partial class DirectoryPredictor : ICommandPredictor, IDisposable
         Options = DirectoryPredictorOptions.Options;
         DirectoryMode = Options.DirectoryModeOn();
         IncludeFileExtensions = Options.IncludeFileExtensions();
+        ResultsLimit = Options.ResultsLimit.GetValueOrDefault();
+        IgnoreCommands = Options.GetIgnoreCommands();
 
         RegisterEvents();
     }
@@ -40,21 +44,13 @@ public partial class DirectoryPredictor : ICommandPredictor, IDisposable
 
         if (!ValidateInput(token, input)) return default;
 
-        // Get all the options and configure them
-
-
-
-
         Func<string, string> getFileName = IncludeFileExtensions ?
             (file => Path.GetFileName(file).ToLower()) :
             (file => Path.GetFileNameWithoutExtension(file).ToLower());
 
-        var resultsLimit = Options.ResultsLimit.GetValueOrDefault();
-
-        var ignoreCommands = Options.GetIgnoreCommands();
         int firstWordIndex = input.IndexOf(' ');
         string command = input.Substring(0, firstWordIndex);
-        if (ignoreCommands.Any(c => c == command)) return default; //future wildcard * support possible
+        if (IgnoreCommands.Any(c => c == command)) return default;
 
         // Parse the cmdline's input
         int lastWordIndex = input.LastIndexOf(' ');
@@ -70,12 +66,12 @@ public partial class DirectoryPredictor : ICommandPredictor, IDisposable
             Directory.GetDirectories(dir, pattern, SearchOption.TopDirectoryOnly)
                 .Catch(typeof(UnauthorizedAccessException))
                 .Select(getFileName)
-                .Take(resultsLimit)
+                .Take(ResultsLimit)
                 .ToArray() :
             Directory.GetFiles(dir, pattern, SearchOption.TopDirectoryOnly)
                 .Catch(typeof(UnauthorizedAccessException))
                 .Select(getFileName)
-                .Take(resultsLimit)
+                .Take(ResultsLimit)
                 .ToArray();
 
         // Insert each one as a suggestion and prep to return
