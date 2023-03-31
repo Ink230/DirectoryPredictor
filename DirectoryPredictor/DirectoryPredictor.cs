@@ -9,12 +9,12 @@ public partial class DirectoryPredictor : ICommandPredictor, IDisposable
     private readonly Guid _guid;
     private Runspace _runspace { get; }
 
-    private DirectoryPredictorOptions Options { get; }
-    private bool DirectoryMode { get; }
-    private bool IncludeFileExtensions { get; }
-    private int ResultsLimit { get; }
-    private string[] IgnoreCommands { get; }
-    private Func<string, string> FileNameFormat { get; }
+    private DirectoryPredictorOptions Options { get; set; }
+    private bool DirectoryMode { get; set; }
+    private bool IncludeFileExtensions { get; set; }
+    private int ResultsLimit { get; set; }
+    private string[] IgnoreCommands { get; set; }
+    private Func<string, string> FileNameFormat { get; set; }
 
     public Guid Id => _guid;
     public string Name => "Directory";
@@ -41,6 +41,8 @@ public partial class DirectoryPredictor : ICommandPredictor, IDisposable
 
     public SuggestionPackage GetSuggestion(PredictionClient client, PredictionContext context, CancellationToken cancellationToken)
     {
+        reloadOptions();
+
         var token = context.TokenAtCursor;
         var input = context.InputAst.Extent.Text;
 
@@ -52,6 +54,18 @@ public partial class DirectoryPredictor : ICommandPredictor, IDisposable
         var suggestions = BuildSuggestionPackage(input, matches);
 
         return suggestions;
+    }
+
+    public void reloadOptions()
+    {
+        Options = DirectoryPredictorOptions.Options;
+        DirectoryMode = Options.DirectoryModeOn();
+        IncludeFileExtensions = Options.IncludeFileExtensions();
+        ResultsLimit = Options.ResultsLimit.GetValueOrDefault();
+        IgnoreCommands = Options.GetIgnoreCommands();
+        FileNameFormat = IncludeFileExtensions ?
+            (file => Path.GetFileName(file).ToLower()) :
+            (file => Path.GetFileNameWithoutExtension(file).ToLower());
     }
 
     private bool ValidInput(Token token, string input)
