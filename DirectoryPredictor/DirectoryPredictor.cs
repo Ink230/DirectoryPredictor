@@ -9,7 +9,14 @@ public partial class DirectoryPredictor : ICommandPredictor, IDisposable
     #region "Boilerplate"
     private readonly Guid _guid;
     private Runspace _runspace { get; }
+
     private DirectoryPredictorOptions Options { get; }
+    private bool DirectoryMode { get; }
+    private bool IncludeFileExtensions { get; }
+
+    public Guid Id => _guid;
+    public string Name => "Directory";
+    public string Description => "Directory predictor";
 
     internal DirectoryPredictor(string guid)
     {
@@ -19,30 +26,26 @@ public partial class DirectoryPredictor : ICommandPredictor, IDisposable
         _runspace.Open();
 
         Options = DirectoryPredictorOptions.Options;
+        DirectoryMode = Options.DirectoryModeOn();
+        IncludeFileExtensions = Options.IncludeFileExtensions();
 
         RegisterEvents();
     }
-
-    public Guid Id => _guid;
-
-    public string Name => "Directory";
-
-    public string Description => "Directory predictor";
     #endregion
 
     public SuggestionPackage GetSuggestion(PredictionClient client, PredictionContext context, CancellationToken cancellationToken)
     {
-        Token token = context.TokenAtCursor;
-        string input = context.InputAst.Extent.Text;
+        var token = context.TokenAtCursor;
+        var input = context.InputAst.Extent.Text;
 
         if (!ValidateInput(token, input)) return default;
 
         // Get all the options and configure them
-        var directoryMode = Options.DirectoryModeOn();
 
-        var includeFileExtensions = Options.IncludeFileExtensions();
 
-        Func<string, string> getFileName = includeFileExtensions ?
+
+
+        Func<string, string> getFileName = IncludeFileExtensions ?
             (file => Path.GetFileName(file).ToLower()) :
             (file => Path.GetFileNameWithoutExtension(file).ToLower());
 
@@ -63,7 +66,7 @@ public partial class DirectoryPredictor : ICommandPredictor, IDisposable
         var dir = _runspace.SessionStateProxy.Path.CurrentLocation.ToString();
 
         // Get the filenames from the dir that match all the conditions
-        string[] files = directoryMode ?
+        string[] files = DirectoryMode ?
             Directory.GetDirectories(dir, pattern, SearchOption.TopDirectoryOnly)
                 .Catch(typeof(UnauthorizedAccessException))
                 .Select(getFileName)
