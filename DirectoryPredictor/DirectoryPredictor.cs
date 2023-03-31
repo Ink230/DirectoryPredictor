@@ -6,7 +6,6 @@ namespace DirectoryPredictor;
 
 public partial class DirectoryPredictor : ICommandPredictor, IDisposable
 {
-    #region "Boilerplate"
     private readonly Guid _guid;
     private Runspace _runspace { get; }
 
@@ -15,6 +14,7 @@ public partial class DirectoryPredictor : ICommandPredictor, IDisposable
     private bool IncludeFileExtensions { get; }
     private int ResultsLimit { get; }
     private string[] IgnoreCommands { get; }
+    private Func<string, string> FileNameFormat { get; }
 
     public Guid Id => _guid;
     public string Name => "Directory";
@@ -32,10 +32,12 @@ public partial class DirectoryPredictor : ICommandPredictor, IDisposable
         IncludeFileExtensions = Options.IncludeFileExtensions();
         ResultsLimit = Options.ResultsLimit.GetValueOrDefault();
         IgnoreCommands = Options.GetIgnoreCommands();
+        FileNameFormat = IncludeFileExtensions ?
+            (file => Path.GetFileName(file).ToLower()) :
+            (file => Path.GetFileNameWithoutExtension(file).ToLower());
 
         RegisterEvents();
     }
-    #endregion
 
     public SuggestionPackage GetSuggestion(PredictionClient client, PredictionContext context, CancellationToken cancellationToken)
     {
@@ -44,40 +46,12 @@ public partial class DirectoryPredictor : ICommandPredictor, IDisposable
 
         if (!ValidateInput(token, input)) return default;
 
-        Func<string, string> getFileName = IncludeFileExtensions ?
-            (file => Path.GetFileName(file).ToLower()) :
-            (file => Path.GetFileNameWithoutExtension(file).ToLower());
+        if (!IsIgnoredCommand(input)) return default;
 
-        int firstWordIndex = input.IndexOf(' ');
-        string command = input.Substring(0, firstWordIndex);
-        if (IgnoreCommands.Any(c => c == command)) return default;
+        var matches = GetDirectorySearchResults(input);
+        var suggestions = BuildSuggestionPackage(input, matches);
 
-        // Parse the cmdline's input
-        int lastWordIndex = input.LastIndexOf(' ');
-        string searchText = input.Substring(lastWordIndex + 1);
-        string returnInput = input.Substring(0, lastWordIndex);
-
-        // Configure the search pattern and the directory to search in
-        var pattern = searchText + "*.*";
-        var dir = _runspace.SessionStateProxy.Path.CurrentLocation.ToString();
-
-        // Get the filenames from the dir that match all the conditions
-        string[] files = DirectoryMode ?
-            Directory.GetDirectories(dir, pattern, SearchOption.TopDirectoryOnly)
-                .Catch(typeof(UnauthorizedAccessException))
-                .Select(getFileName)
-                .Take(ResultsLimit)
-                .ToArray() :
-            Directory.GetFiles(dir, pattern, SearchOption.TopDirectoryOnly)
-                .Catch(typeof(UnauthorizedAccessException))
-                .Select(getFileName)
-                .Take(ResultsLimit)
-                .ToArray();
-
-        // Insert each one as a suggestion and prep to return
-        List<PredictiveSuggestion> listOfMatches = files.Select(file => new PredictiveSuggestion($"{returnInput} {file}")).ToList();
-
-        return new SuggestionPackage(listOfMatches);
+        return suggestions;
     }
 
     private bool ValidateInput(Token token, string input)
@@ -91,14 +65,56 @@ public partial class DirectoryPredictor : ICommandPredictor, IDisposable
         return true;
     }
 
+    private bool IsIgnoredCommand(string input)
+    {
+        var firstWordIndex = input.IndexOf(' ');
+        var command = input.Substring(0, firstWordIndex);
+
+        if (IgnoreCommands.Any(c => c == command)) return false;
+
+        return true;
+    }
+
+    private string[] GetDirectorySearchResults(string input)
+    {
+        var lastWordIndex = input.LastIndexOf(' ');
+        var searchText = input.Substring(lastWordIndex);
+
+        var pattern = searchText + "*.*";
+        var dir = _runspace.SessionStateProxy.Path.CurrentLocation.ToString();
+
+        var files = DirectoryMode ?
+            Directory.GetDirectories(dir, pattern, SearchOption.TopDirectoryOnly)
+                .Catch(typeof(UnauthorizedAccessException))
+                .Select(FileNameFormat)
+                .Take(ResultsLimit)
+                .ToArray() :
+            Directory.GetFiles(dir, pattern, SearchOption.TopDirectoryOnly)
+                .Catch(typeof(UnauthorizedAccessException))
+                .Select(FileNameFormat)
+                .Take(ResultsLimit)
+                .ToArray();
+
+        return files;
+    }
+
+    private SuggestionPackage BuildSuggestionPackage(string input, string[] matches)
+    {
+        var lastWordIndex = input.LastIndexOf(' ');
+        var returnInput = input.Substring(0, lastWordIndex);
+
+        List<PredictiveSuggestion> suggestions = matches.Select(file => new PredictiveSuggestion($"{returnInput} {file}")).ToList();
+
+        return new SuggestionPackage(suggestions);
+    }
+
     public void Dispose()
     {
         UnregisterEvents();
         _runspace.Dispose();
     }
 
-    #region "interface methods for processing feedback"
-
+    #region CommandPredictor
     /// <summary>
     /// Gets a value indicating whether the predictor accepts a specific kind of feedback.
     /// </summary>
@@ -143,6 +159,5 @@ public partial class DirectoryPredictor : ICommandPredictor, IDisposable
     /// <param name="commandLine">The last accepted command line.</param>
     /// <param name="success">Shows whether the execution was successful.</param>
     public void OnCommandLineExecuted(PredictionClient client, string commandLine, bool success) { }
-
     #endregion;
 }
