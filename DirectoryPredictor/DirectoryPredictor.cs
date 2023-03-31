@@ -44,9 +44,9 @@ public partial class DirectoryPredictor : ICommandPredictor, IDisposable
         var token = context.TokenAtCursor;
         var input = context.InputAst.Extent.Text;
 
-        if (!ValidateInput(token, input)) return default;
+        if (!ValidInput(token, input)) return default;
 
-        if (!IsIgnoredCommand(input)) return default;
+        if (IsIgnoredCommand(input)) return default;
 
         var matches = GetDirectorySearchResults(input);
         var suggestions = BuildSuggestionPackage(input, matches);
@@ -54,7 +54,7 @@ public partial class DirectoryPredictor : ICommandPredictor, IDisposable
         return suggestions;
     }
 
-    private bool ValidateInput(Token token, string input)
+    private bool ValidInput(Token token, string input)
     {
         if (token is null) return false;
 
@@ -70,9 +70,9 @@ public partial class DirectoryPredictor : ICommandPredictor, IDisposable
         var firstWordIndex = input.IndexOf(' ');
         var command = input.Substring(0, firstWordIndex);
 
-        if (IgnoreCommands.Any(c => c == command)) return false;
+        if (IgnoreCommands.Any(c => c == command)) return true;
 
-        return true;
+        return false;
     }
 
     private string[] GetDirectorySearchResults(string input)
