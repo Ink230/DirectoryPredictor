@@ -78,14 +78,15 @@ public partial class DirectoryPredictor : ICommandPredictor, IDisposable
 
         var pattern = searchText + "*.*";
         var dir = _runspace.SessionStateProxy.Path.CurrentLocation.ToString();
+        var searchOptions = SearchOption.TopDirectoryOnly;
 
         var files = DirectoryMode ?
-            Directory.GetDirectories(dir, pattern, SearchOption.TopDirectoryOnly)
+            Directory.GetDirectories(dir, pattern, searchOptions)
                 .Catch(typeof(UnauthorizedAccessException))
                 .Select(FileNameFormat)
                 .Take(ResultsLimit)
                 .ToArray() :
-            Directory.GetFiles(dir, pattern, SearchOption.TopDirectoryOnly)
+            Directory.GetFiles(dir, pattern, searchOptions)
                 .Catch(typeof(UnauthorizedAccessException))
                 .Select(FileNameFormat)
                 .Take(ResultsLimit)
