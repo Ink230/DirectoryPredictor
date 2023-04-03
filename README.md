@@ -95,7 +95,8 @@ As of v0.0.4, the plan is to gather user suggestions!
 
 If you have an idea, suggestion or want to contribute, please open an Issue!
 
-- Folder mode is currently being developed
+- Folder mode is currently works from source
+- Considerations being made to add a mixed file / folder mode but this comes with addition cmdlet options to get behaviour right
 - Pattern matching (* wildcard for files, ? for folder mode listing all files...etc) is next
 
 # Disclaimers
