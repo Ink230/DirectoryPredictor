@@ -14,3 +14,10 @@ public enum DirectoryMode
     Folders,
     Mixed,
 }
+
+public enum SortMixedResults
+{
+    None,
+    Files,
+    Folders,
+}

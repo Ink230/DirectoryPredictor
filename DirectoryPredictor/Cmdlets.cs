@@ -18,6 +18,8 @@ public sealed class DirectoryPredictorOptions
 
     public DirectoryMode DirectoryMode { get; set; } = DirectoryMode.None;
 
+    public SortMixedResults SortMixedResults { get; set; } = SortMixedResults.None;
+
     public int? ResultsLimit { get; set; } = 10;
 
     public string IgnoreCommands { get; set; } = string.Empty;
@@ -47,6 +49,14 @@ public class Cmdlets
             set => _directoryMode = value;
         }
         internal DirectoryMode? _directoryMode = DirectoryMode.None;
+
+        [Parameter]
+        public SortMixedResults SortMixedResults
+        {
+            get => _sortMixedResults.GetValueOrDefault();
+            set => _sortMixedResults = value;
+        }
+        internal SortMixedResults? _sortMixedResults = SortMixedResults.None;
 
         [Parameter]
         [ValidateRange(1, 500)]
@@ -79,6 +89,11 @@ public class Cmdlets
             if (DirectoryMode != DirectoryMode.None)
             {
                 Options.DirectoryMode = DirectoryMode;
+            }
+
+            if (SortMixedResults != SortMixedResults.None)
+            {
+                Options.SortMixedResults = SortMixedResults;
             }
 
             if (ResultsLimit > 0)

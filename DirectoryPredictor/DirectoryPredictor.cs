@@ -11,6 +11,7 @@ public partial class DirectoryPredictor : ICommandPredictor, IDisposable
 
     private DirectoryPredictorOptions Options { get => DirectoryPredictorOptions.Options; }
     private DirectoryMode DirectoryMode { get => Options.DirectoryMode; }
+    private SortMixedResults SortMixedResults { get => Options.SortMixedResults; }
     private bool IncludeFileExtensions { get => Options.IncludeFileExtensions(); }
     private int ResultsLimit { get => Options.ResultsLimit.GetValueOrDefault(); }
     private string[] IgnoreCommands { get => Options.GetIgnoreCommands(); }
@@ -80,38 +81,54 @@ public partial class DirectoryPredictor : ICommandPredictor, IDisposable
         var dir = _runspace.SessionStateProxy.Path.CurrentLocation.ToString();
         var searchOptions = SearchOption.TopDirectoryOnly;
 
-        if (DirectoryMode == DirectoryMode.None || DirectoryMode == DirectoryMode.Files)
+        var resultList = new List<string>();
+
+        if (DirectoryMode == DirectoryMode.None || DirectoryMode == DirectoryMode.Files || DirectoryMode == DirectoryMode.Mixed)
         {
-            return Directory.GetFiles(dir, pattern, searchOptions)
+            resultList.AddRange(Directory.GetFiles(dir, pattern, searchOptions)
                 .Catch(typeof(UnauthorizedAccessException))
                 .Select(FileNameFormat)
-                .Take(ResultsLimit)
-                .ToArray();
+                .Take(ResultsLimit));
+
         }
 
         if (DirectoryMode == DirectoryMode.Folders)
         {
-            return Directory.GetDirectories(dir, pattern, searchOptions)
+            resultList.AddRange(Directory.GetDirectories(dir, pattern, searchOptions)
                 .Catch(typeof(UnauthorizedAccessException))
                 .Select(FileNameFormat)
-                .Take(ResultsLimit)
-                .ToArray();
+                .Take(ResultsLimit));
         }
 
-        var files = Directory.GetDirectories(dir, pattern, searchOptions)
+        if (DirectoryMode == DirectoryMode.Mixed)
+        {
+            resultList.AddRange(Directory.GetDirectories(dir, pattern, searchOptions)
                 .Catch(typeof(UnauthorizedAccessException))
                 .Select(FileNameFormat)
-                .Take(ResultsLimit)
                 .Select(x => x + " #folder")
-                .ToList();
+                .Take(ResultsLimit));
+        }
 
-        files.AddRange(Directory.GetFiles(dir, pattern, searchOptions)
-                .Catch(typeof(UnauthorizedAccessException))
-                .Select(FileNameFormat)
-                .Take(ResultsLimit)
-                .ToArray());
+        if (DirectoryMode == DirectoryMode.Mixed && SortMixedResults == SortMixedResults.Folders)
+        {
+            resultList.Sort((a, b) =>
+            {
+                if (a.EndsWith("#folder") && !b.EndsWith("#folder"))
+                {
+                    return -1;
+                }
+                else if (!a.EndsWith("#folder") && b.EndsWith("#folder"))
+                {
+                    return 1;
+                }
+                else
+                {
+                    return a.CompareTo(b);
+                }
+            });
+        }
 
-        return files.ToArray();
+        return resultList.ToArray();
     }
 
     private SuggestionPackage BuildSuggestionPackage(string input, string[] matches)
