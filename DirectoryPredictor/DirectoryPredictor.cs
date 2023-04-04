@@ -102,6 +102,7 @@ public partial class DirectoryPredictor : ICommandPredictor, IDisposable
                 .Catch(typeof(UnauthorizedAccessException))
                 .Select(FileNameFormat)
                 .Take(ResultsLimit)
+                .Select(x => x + " #folder")
                 .ToList();
 
         files.AddRange(Directory.GetFiles(dir, pattern, searchOptions)
