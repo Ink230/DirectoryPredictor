@@ -95,9 +95,10 @@ As of v0.0.4, the plan is to gather user suggestions!
 
 If you have an idea, suggestion or want to contribute, please open an Issue!
 
-- Folder mode is currently works from source
-- Considerations being made to add a mixed file / folder mode but this comes with addition cmdlet options to get behaviour right
-- Pattern matching (* wildcard for files, ? for folder mode listing all files...etc) is next
+- Folder mode currently works from source and has an option cmdlet to sort by folders or files first ✔
+- Pattern matching (* wildcard for files, ? for folder mode listing all files...etc) is in development
+- Search by filename extension is next
+- These three features when completed will launch v0.0.5 || Until the Subsystem is taken out of experimental we will use this versioning scheme
 
 # Disclaimers
 
