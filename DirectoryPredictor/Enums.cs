@@ -11,5 +11,6 @@ public enum DirectoryMode
 {
     None,
     Files,
-    Folders
+    Folders,
+    Mixed,
 }

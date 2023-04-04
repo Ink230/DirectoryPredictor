@@ -18,11 +18,6 @@ public sealed class DirectoryPredictorOptions
 
     public DirectoryMode DirectoryMode { get; set; } = DirectoryMode.None;
 
-    public bool DirectoryModeOn()
-    {
-        return (DirectoryMode == DirectoryMode.Folders);
-    }
-
     public int? ResultsLimit { get; set; } = 10;
 
     public string IgnoreCommands { get; set; } = string.Empty;

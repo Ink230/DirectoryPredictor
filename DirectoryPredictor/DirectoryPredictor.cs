@@ -10,7 +10,7 @@ public partial class DirectoryPredictor : ICommandPredictor, IDisposable
     private Runspace _runspace { get; }
 
     private DirectoryPredictorOptions Options { get => DirectoryPredictorOptions.Options; }
-    private bool DirectoryMode { get => Options.DirectoryModeOn(); }
+    private DirectoryMode DirectoryMode { get => Options.DirectoryMode; }
     private bool IncludeFileExtensions { get => Options.IncludeFileExtensions(); }
     private int ResultsLimit { get => Options.ResultsLimit.GetValueOrDefault(); }
     private string[] IgnoreCommands { get => Options.GetIgnoreCommands(); }
@@ -80,19 +80,37 @@ public partial class DirectoryPredictor : ICommandPredictor, IDisposable
         var dir = _runspace.SessionStateProxy.Path.CurrentLocation.ToString();
         var searchOptions = SearchOption.TopDirectoryOnly;
 
-        var files = DirectoryMode ?
-            Directory.GetDirectories(dir, pattern, searchOptions)
-                .Catch(typeof(UnauthorizedAccessException))
-                .Select(FileNameFormat)
-                .Take(ResultsLimit)
-                .ToArray() :
-            Directory.GetFiles(dir, pattern, searchOptions)
+        if (DirectoryMode == DirectoryMode.None || DirectoryMode == DirectoryMode.Files)
+        {
+            return Directory.GetFiles(dir, pattern, searchOptions)
                 .Catch(typeof(UnauthorizedAccessException))
                 .Select(FileNameFormat)
                 .Take(ResultsLimit)
                 .ToArray();
+        }
 
-        return files;
+        if (DirectoryMode == DirectoryMode.Folders)
+        {
+            return Directory.GetDirectories(dir, pattern, searchOptions)
+                .Catch(typeof(UnauthorizedAccessException))
+                .Select(FileNameFormat)
+                .Take(ResultsLimit)
+                .ToArray();
+        }
+
+        var files = Directory.GetDirectories(dir, pattern, searchOptions)
+                .Catch(typeof(UnauthorizedAccessException))
+                .Select(FileNameFormat)
+                .Take(ResultsLimit)
+                .ToList();
+
+        files.AddRange(Directory.GetFiles(dir, pattern, searchOptions)
+                .Catch(typeof(UnauthorizedAccessException))
+                .Select(FileNameFormat)
+                .Take(ResultsLimit)
+                .ToArray());
+
+        return files.ToArray();
     }
 
     private SuggestionPackage BuildSuggestionPackage(string input, string[] matches)
