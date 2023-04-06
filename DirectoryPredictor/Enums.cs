@@ -21,3 +21,10 @@ public enum SortMixedResults
     Files,
     Folders,
 }
+
+public enum ExtensionMode
+{
+    None,
+    Enabled,
+    Disabled,
+}

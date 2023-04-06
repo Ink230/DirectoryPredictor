@@ -20,6 +20,8 @@ public sealed class DirectoryPredictorOptions
 
     public SortMixedResults SortMixedResults { get; set; } = SortMixedResults.None;
 
+    public ExtensionMode ExtensionMode { get; set; } = ExtensionMode.None;
+
     public int? ResultsLimit { get; set; } = 10;
 
     public string IgnoreCommands { get; set; } = string.Empty;
@@ -59,6 +61,14 @@ public class Cmdlets
         internal SortMixedResults? _sortMixedResults = SortMixedResults.None;
 
         [Parameter]
+        public ExtensionMode ExtensionMode
+        {
+            get => _extensionMode.GetValueOrDefault();
+            set => _extensionMode = value;
+        }
+        internal ExtensionMode? _extensionMode = ExtensionMode.None;
+
+        [Parameter]
         [ValidateRange(1, 500)]
         public int ResultsLimit
         {
@@ -94,6 +104,11 @@ public class Cmdlets
             if (SortMixedResults != SortMixedResults.None)
             {
                 Options.SortMixedResults = SortMixedResults;
+            }
+
+            if (ExtensionMode != ExtensionMode.None)
+            {
+                Options.ExtensionMode = ExtensionMode;
             }
 
             if (ResultsLimit > 0)
