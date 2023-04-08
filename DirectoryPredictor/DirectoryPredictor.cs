@@ -12,7 +12,8 @@ public partial class DirectoryPredictor : ICommandPredictor, IDisposable
     private DirectoryPredictorOptions Options { get => DirectoryPredictorOptions.Options; }
     private DirectoryMode DirectoryMode { get => Options.DirectoryMode; }
     private SortMixedResults SortMixedResults { get => Options.SortMixedResults; }
-    private bool IncludeFileExtensions { get => Options.IncludeFileExtensions(); }
+    private bool IncludeFileExtensions { get => Options.IsEnabledFileExtensions(); }
+    private bool ExtensionMode { get => Options.IsEnabledExtensionMode(); }
     private int ResultsLimit { get => Options.ResultsLimit.GetValueOrDefault(); }
     private string[] IgnoreCommands { get => Options.GetIgnoreCommands(); }
     private Func<string, string> FileNameFormat
@@ -77,6 +78,9 @@ public partial class DirectoryPredictor : ICommandPredictor, IDisposable
     {
         var lastWordIndex = input.LastIndexOf(' ');
         var searchText = input.Substring(lastWordIndex + 1);
+
+
+
         var pattern = searchText + "*.*";
 
         return pattern;
