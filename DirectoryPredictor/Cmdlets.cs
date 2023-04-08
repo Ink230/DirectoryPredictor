@@ -11,10 +11,7 @@ public sealed class DirectoryPredictorOptions
 
     public FileExtensions FileExtensions { get; set; } = FileExtensions.None;
 
-    public bool IsEnabledFileExtensions()
-    {
-        return (FileExtensions == FileExtensions.None || FileExtensions == FileExtensions.Include);
-    }
+    public bool IsEnabledFileExtensions() => (FileExtensions == FileExtensions.None || FileExtensions == FileExtensions.Include);
 
     public DirectoryMode DirectoryMode { get; set; } = DirectoryMode.None;
 
@@ -22,12 +19,7 @@ public sealed class DirectoryPredictorOptions
 
     public ExtensionMode ExtensionMode { get; set; } = ExtensionMode.None;
 
-    public bool IsEnabledExtensionMode()
-    {
-        if (ExtensionMode == ExtensionMode.Enabled) return true;
-
-        return false;
-    }
+    public bool IsEnabledExtensionMode() => ExtensionMode == ExtensionMode.Enabled ? true : false;
 
     public int? ResultsLimit { get; set; } = 10;
 

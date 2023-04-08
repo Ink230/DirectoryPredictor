@@ -78,11 +78,15 @@ public partial class DirectoryPredictor : ICommandPredictor, IDisposable
     {
         var lastWordIndex = input.LastIndexOf(' ');
         var searchText = input.Substring(lastWordIndex + 1);
+        string pattern;
 
+        if (!ExtensionMode)
+        {
+            pattern = searchText + "*.*";
+            return pattern;
+        }
 
-
-        var pattern = searchText + "*.*";
-
+        pattern = "*." + searchText + "*";
         return pattern;
     }
 
