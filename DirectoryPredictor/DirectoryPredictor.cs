@@ -80,13 +80,8 @@ public partial class DirectoryPredictor : ICommandPredictor, IDisposable
         var searchText = input.Substring(lastWordIndex + 1);
         string pattern;
 
-        if (!ExtensionMode)
-        {
-            pattern = searchText + "*.*";
-            return pattern;
-        }
+        pattern = ExtensionMode ? "*." + searchText + "*" : searchText + "*.*";
 
-        pattern = "*." + searchText + "*";
         return pattern;
     }
 
