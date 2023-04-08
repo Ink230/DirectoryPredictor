@@ -45,7 +45,8 @@ public partial class DirectoryPredictor : ICommandPredictor, IDisposable
 
         if (IsIgnoredCommand(input)) return default;
 
-        var matches = GetDirectorySearchResults(input);
+        var pattern = GetSearchPattern(input);
+        var matches = GetDirectorySearchResults(pattern);
         var suggestions = BuildSuggestionPackage(input, matches);
 
         return suggestions;
@@ -72,12 +73,17 @@ public partial class DirectoryPredictor : ICommandPredictor, IDisposable
         return false;
     }
 
-    private string[] GetDirectorySearchResults(string input)
+    private string GetSearchPattern(string input)
     {
         var lastWordIndex = input.LastIndexOf(' ');
         var searchText = input.Substring(lastWordIndex + 1);
-
         var pattern = searchText + "*.*";
+
+        return pattern;
+    }
+
+    private string[] GetDirectorySearchResults(string pattern)
+    {
         var dir = _runspace.SessionStateProxy.Path.CurrentLocation.ToString();
         var searchOptions = SearchOption.TopDirectoryOnly;
 
