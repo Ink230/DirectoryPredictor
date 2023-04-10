@@ -40,7 +40,7 @@ public partial class DirectoryPredictor : ICommandPredictor, IDisposable
     public SuggestionPackage GetSuggestion(PredictionClient client, PredictionContext context, CancellationToken cancellationToken)
     {
         var token = context.TokenAtCursor;
-        var input = context.InputAst.Extent.Text;
+        var input = context.InputAst.Extent.Text.Replace("\"", "");
 
         if (!ValidInput(token, input)) return default;
 
@@ -95,11 +95,14 @@ public partial class DirectoryPredictor : ICommandPredictor, IDisposable
 
         var subPatterns = pattern.Split('|');
 
-        void DoSearch(string sub)
+        List<string> DoSearch(string sub)
         {
+            var subResultList = new List<string>();
+
             if (DirectoryMode == DirectoryMode.None || DirectoryMode == DirectoryMode.Files || DirectoryMode == DirectoryMode.Mixed)
             {
-                resultList.AddRange(Directory.GetFiles(dir, sub, searchOptions).Catch(typeof(UnauthorizedAccessException))
+                subResultList.AddRange(Directory.GetFiles(dir, sub, searchOptions)
+                    .Catch(typeof(UnauthorizedAccessException))
                     .Where(file =>
                     {
                         if (collectedFiles.Contains(file)) return false;
@@ -114,7 +117,7 @@ public partial class DirectoryPredictor : ICommandPredictor, IDisposable
 
             if (DirectoryMode == DirectoryMode.Folders || DirectoryMode == DirectoryMode.Mixed)
             {
-                resultList.AddRange(Directory.GetDirectories(dir, sub, searchOptions)
+                subResultList.AddRange(Directory.GetDirectories(dir, sub, searchOptions)
                     .Catch(typeof(UnauthorizedAccessException))
                     .Where(folder =>
                     {
@@ -127,11 +130,13 @@ public partial class DirectoryPredictor : ICommandPredictor, IDisposable
                     .Select(x => DirectoryMode == DirectoryMode.Mixed ? x + " #folder" : x)
                     .Take(ResultsLimit));
             }
+
+            return subResultList;
         }
 
         foreach (var subPattern in subPatterns)
         {
-            DoSearch(subPattern);
+            resultList.AddRange(DoSearch(subPattern));
         }
 
         if (DirectoryMode == DirectoryMode.Mixed && SortMixedResults == SortMixedResults.Folders)
