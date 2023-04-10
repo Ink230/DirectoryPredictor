@@ -91,56 +91,68 @@ public partial class DirectoryPredictor : ICommandPredictor, IDisposable
         var searchOptions = SearchOption.TopDirectoryOnly;
 
         var resultList = new List<string>();
+        var collectedFiles = new HashSet<string>();
 
-        void DoSearch()
+        var subPatterns = pattern.Split('|');
+
+        void DoSearch(string sub)
         {
             if (DirectoryMode == DirectoryMode.None || DirectoryMode == DirectoryMode.Files || DirectoryMode == DirectoryMode.Mixed)
             {
-                resultList.AddRange(Directory.GetFiles(dir, pattern, searchOptions)
-                    .Catch(typeof(UnauthorizedAccessException))
+                resultList.AddRange(Directory.GetFiles(dir, sub, searchOptions).Catch(typeof(UnauthorizedAccessException))
+                    .Where(file =>
+                    {
+                        if (collectedFiles.Contains(file)) return false;
+
+                        collectedFiles.Add(file);
+                        return true;
+                    })
                     .Select(FileNameFormat)
                     .Take(ResultsLimit));
 
             }
 
-            if (DirectoryMode == DirectoryMode.Folders)
+            if (DirectoryMode == DirectoryMode.Folders || DirectoryMode == DirectoryMode.Mixed)
             {
-                resultList.AddRange(Directory.GetDirectories(dir, pattern, searchOptions)
+                resultList.AddRange(Directory.GetDirectories(dir, sub, searchOptions)
                     .Catch(typeof(UnauthorizedAccessException))
-                    .Select(FileNameFormat)
-                    .Take(ResultsLimit));
-            }
+                    .Where(folder =>
+                    {
+                        if (collectedFiles.Contains(folder)) return false;
 
-            if (DirectoryMode == DirectoryMode.Mixed)
-            {
-                resultList.AddRange(Directory.GetDirectories(dir, pattern, searchOptions)
-                    .Catch(typeof(UnauthorizedAccessException))
+                        collectedFiles.Add(folder);
+                        return true;
+                    })
                     .Select(FileNameFormat)
-                    .Select(x => x + " #folder")
+                    .Select(x => DirectoryMode == DirectoryMode.Mixed ? x + " #folder" : x)
                     .Take(ResultsLimit));
-            }
-
-            if (DirectoryMode == DirectoryMode.Mixed && SortMixedResults == SortMixedResults.Folders)
-            {
-                resultList.Sort((a, b) =>
-                {
-                    if (a.EndsWith("#folder") && !b.EndsWith("#folder"))
-                    {
-                        return -1;
-                    }
-                    else if (!a.EndsWith("#folder") && b.EndsWith("#folder"))
-                    {
-                        return 1;
-                    }
-                    else
-                    {
-                        return a.CompareTo(b);
-                    }
-                });
             }
         }
 
-        DoSearch();
+        foreach (var subPattern in subPatterns)
+        {
+            DoSearch(subPattern);
+        }
+
+        if (DirectoryMode == DirectoryMode.Mixed && SortMixedResults == SortMixedResults.Folders)
+        {
+            resultList.Sort((a, b) =>
+            {
+                if (a.EndsWith("#folder") && !b.EndsWith("#folder"))
+                {
+                    return -1;
+                }
+                else if (!a.EndsWith("#folder") && b.EndsWith("#folder"))
+                {
+                    return 1;
+                }
+                else
+                {
+                    return a.CompareTo(b);
+                }
+            });
+        }
+
         return resultList.ToArray();
     }
 
