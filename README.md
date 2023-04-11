@@ -6,6 +6,16 @@ The Directory Predictor permits live directory file lookups for PSReadLine's aut
 
 https://user-images.githubusercontent.com/29797557/212500726-26f98466-dd21-46e1-b793-a08c803e2c23.mp4
 
+
+**Features include...**
+- Pattern matching support (?, \*, |)
+- Search files, folders, or both
+- Hide or show file extensions
+- Search by file extension
+- Ignore specific commands
+- Sort results by files or folders
+- Limit the number of results
+
 # Installation
 
 ### PowerShell via [PSGallery](https://www.powershellgallery.com/packages/DirectoryPredictor/)
