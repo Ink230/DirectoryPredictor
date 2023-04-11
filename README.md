@@ -50,6 +50,21 @@ Determine if file extensions should show or not in the prediction and in the aut
   
 ```Set-DirectoryPredictorOption -FileExtensions <string> [Include | Exclude]```
 
+### DirectoryMode
+Search for files, folders, or both.
+  
+```Set-DirectoryPredictorOption -DirectoryMode <string> [Files | Folders | Mixed]```
+
+### SortMixedResults
+Sort your results by Files or by Folders first.
+  
+```Set-DirectoryPredictorOption -SortMixedResults <string> [Files | Folders]```
+
+### ExtensionMode
+Search file extensions. Does not work with -DirectoryMode Folders.
+  
+```Set-DirectoryPredictorOption -ExtensionMode <string> [Enabled | Disabled]```
+
 ### ResultsLimit
 Specify how many results, from 1 to 10, to display. 10 is a current limit by PSReadLine but the module will accept up to 500 currently.
 
@@ -59,6 +74,13 @@ Specify how many results, from 1 to 10, to display. 10 is a current limit by PSR
 Ignore specific commands in a comma separated string. This will cause those commands to not display [Directory] suggestions.
 
 ```Set-DirectoryPredictorOption -IgnoreCommands <string> [comma separated list]```
+
+### Pattern Matching
+You have 3 pattern matching operators.
+
+- ? : Search anything that is available to be searched from the above cmdlet options
+- \* : Wildcard search. Before, after, or both.
+- | : OR pattern search. Search for results that make true either condition. Supports multiple | operators.
 
 ### Tips
 * Each of these flags work great with aliases for fast on the fly adjustments
@@ -81,7 +103,6 @@ Ignore specific commands in a comma separated string. This will cause those comm
 
 # Behaviour
 
-- Only files are searched and only one directory deep (folder mode in the works)
 - All symbols but spaces are respected
 - Only the last word is used to search but previous input is respected
   - ```code -n hel``` will work and will match "hel" to filenames
@@ -91,15 +112,9 @@ Ignore specific commands in a comma separated string. This will cause those comm
 
 # Roadmap
 
-As of v0.0.4, the plan is to gather user suggestions!
+As of v0.0.5, the plan is to gather even more user suggestions!
 
 If you have an idea, suggestion or want to contribute, please open an Issue!
-
-- Folder mode is implemented ✔
-- Search by filename extension has been implemented ✔
-- Pattern matching (* wildcard for files, ? for folder mode listing all files...etc) is in development
-- These three features when completed will launch v0.0.5
-- **Until the Subsystem is taken out of experimental we will use this versioning scheme*
 
 # Disclaimers
 
