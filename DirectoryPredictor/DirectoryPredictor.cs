@@ -40,7 +40,7 @@ public partial class DirectoryPredictor : ICommandPredictor, IDisposable
     public SuggestionPackage GetSuggestion(PredictionClient client, PredictionContext context, CancellationToken cancellationToken)
     {
         var token = context.TokenAtCursor;
-        var input = context.InputAst.Extent.Text.Replace("\"", "");
+        var input = context.InputAst.Extent.Text.Replace("\"", "").Replace("\'", "");
 
         if (!ValidInput(token, input)) return default;
 
@@ -77,10 +77,23 @@ public partial class DirectoryPredictor : ICommandPredictor, IDisposable
     private string GetSearchPattern(string input)
     {
         var lastWordIndex = input.LastIndexOf(' ');
-        var searchText = input.Substring(lastWordIndex + 1);
-        string pattern;
+        var inputSearchText = input.Substring(lastWordIndex + 1);
+        string pattern = "";
 
-        pattern = ExtensionMode ? "*." + searchText + "*" : searchText + "*.*";
+        var searchTexts = inputSearchText.Split("|", StringSplitOptions.RemoveEmptyEntries);
+
+        foreach (var searchText in searchTexts)
+        {
+
+            if (ExtensionMode)
+            {
+                pattern += $"*.{searchText}*|";
+            }
+            else
+            {
+                pattern += $"{searchText}*.*|";
+            }
+        }
 
         return pattern;
     }
@@ -93,7 +106,7 @@ public partial class DirectoryPredictor : ICommandPredictor, IDisposable
         var resultList = new List<string>();
         var collectedFiles = new HashSet<string>();
 
-        var subPatterns = pattern.Split('|');
+        var subPatterns = pattern.Split('|', StringSplitOptions.RemoveEmptyEntries);
 
         List<string> DoSearch(string sub)
         {
