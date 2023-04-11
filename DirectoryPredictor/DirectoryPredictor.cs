@@ -176,6 +176,12 @@ public partial class DirectoryPredictor : ICommandPredictor, IDisposable
 
     private SuggestionPackage BuildSuggestionPackage(string input, string[] matches)
     {
+        if (DirectoryMode == DirectoryMode.Folders && ExtensionMode)
+        {
+            List<PredictiveSuggestion> shortCircuitMessage = new List<PredictiveSuggestion>();
+            shortCircuitMessage.Add(new PredictiveSuggestion($"You have both Folder mode and Extension mode enabled. Disable one to see results."));
+            return new SuggestionPackage(shortCircuitMessage);
+        }
         var lastWordIndex = input.LastIndexOf(' ');
         var returnInput = input.Substring(0, lastWordIndex);
 

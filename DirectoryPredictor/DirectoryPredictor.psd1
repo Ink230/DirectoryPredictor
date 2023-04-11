@@ -1,6 +1,6 @@
 @{
     RootModule = 'DirectoryPredictor.dll'
-    ModuleVersion = '0.0.4'
+    ModuleVersion = '0.0.5'
     GUID = 'e242df59-e307-4476-9811-6a0c5cba8d63'
 
     Author = 'Justin Quinn'
@@ -14,7 +14,7 @@
 
         PSData = @{
 
-            Tags = @('Directory','Searcher', 'PSReadLine', 'Predictor', 'Plugin', 'File', 'Files', 'Filenames', 'Path')
+            Tags = @('Directory','Searcher', 'PSReadLine', 'Predictor', 'Plugin', 'File', 'Files', 'Filenames', 'Path', 'Folders')
 
             # Full source code available
             ProjectUri = 'https://github.com/Ink230/DirectoryPredictor'
@@ -23,6 +23,9 @@
 Set-DirectoryPredictorOption -FileExtensions <string> [Include] | [Exclude]
 Set-DirectoryPredictorOption -ResultsLimit <int> [1-10]
 Set-DirectoryPredictorOption -IgnoreCommands <string> [comma separated list]
+Set-DirectoryPredictorOption -DirectoryMode <string> [Files | Folders | Mixed]
+Set-DirectoryPredictorOption -SortMixedResults <string> [Files | Folders]
+Set-DirectoryPredictorOption -ExtensionMode <string> [Enabled | Disabled]
 
 *Tip: Most of these commands become very useful with alias setters/togglers for on the fly changes
 
@@ -30,6 +33,13 @@ Set-DirectoryPredictorOption -IgnoreCommands <string> [comma separated list]
 '
 
             ReleaseNotes = '
+v0.0.5
+• New Pattern matching behaviour with ? (any), * (wildcard, before, after), and | (OR, match multiple search patterns, prepend with a quote)
+• New -DirectoryMode [Files | Folders | Mixed] to search any combination of files and folders
+• New -SortMixedResults [Files | Folders] to prioritize which suggestions are sorted at top
+• New -ExtensionMode [Enable | Disable] to search just file extensions (does not work with -DirectoryMode Folders)
+• Reworked code to be more extensible for future cmdlet options
+
 v0.0.4
 • New -IgnoreCommands [comma separated list] to ignore some cmds from using the predictor
 • New -ResultsLimit [1-10] to limit the number of results (10 is PSReadLine limit for now)
