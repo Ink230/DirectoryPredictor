@@ -82,6 +82,10 @@ You have 3 pattern matching operators.
 - \* : Wildcard search. Before, after, or both.
 - | : OR pattern search. Search for results that make true either condition. Supports multiple | operators.
 
+- Ex:
+```ls 't|p```
+  - *Note the ' or " is only required for multiple patterns*
+
 ### Tips
 * Each of these flags work great with aliases for fast on the fly adjustments
 * Example
