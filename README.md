@@ -93,7 +93,7 @@ You have 3 pattern matching operators.
 - | : OR pattern search. Search for results that make true either condition. Supports multiple | operators.
 
 - Ex:
-```ls 't|p```
+```ls 't|p``` or ```ls '*et|*pl``` or ```ls *ing``` or ```ls ?```
   - *Note the ' or " is only required for multiple patterns*
 
 ### Tips
