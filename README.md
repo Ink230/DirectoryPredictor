@@ -42,7 +42,6 @@ Download the relevant .dll release and place where desired. In your $profile
    
    ```Set-PSReadLineOption -PredictionSource HistoryAndPlugin```
 
-
 4. Restart or reload
 
 5. Check the module is installed
