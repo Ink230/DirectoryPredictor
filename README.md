@@ -89,7 +89,7 @@ You have 3 pattern matching operators.
 
 - ? : Search anything that is available to be searched from the above cmdlet options
 - \* : Wildcard search. Before, after, or both.
-- | : OR pattern search. Search for results that make true either condition. Supports multiple | operators.
+- | : OR pattern search. Search for results that match any number of the patterns provided. Supports multiple | operators.
 
 - Ex:
 ```ls 't|p``` or ```ls '*et|*pl``` or ```ls *ing``` or ```ls ?```
