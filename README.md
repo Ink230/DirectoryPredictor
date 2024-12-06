@@ -22,6 +22,10 @@ https://user-images.githubusercontent.com/29797557/212500726-26f98466-dd21-46e1-
 
 ```Install-Module -Name DirectoryPredictor```
 
+In your $profile add
+
+```Import-Module DirectoryPredictor```
+
 ### Filepath .dll
 
 Download the relevant .dll release and place where desired. In your $profile
